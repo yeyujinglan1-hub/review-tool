@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>复习工具</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, 'Segoe UI', sans-serif; background: #f0f2f5; color: #333; min-height: 100vh; }
+  .container { max-width: 800px; margin: 0 auto; padding: 20px; }
+  h1 { text-align: center; margin-bottom: 20px; font-size: 1.5em; color: #1a1a1a; }
+
+  .toolbar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; align-items: center; }
+  .toolbar button { padding: 8px 12px; border: 1px solid #d0d5dd; border-radius: 6px; font-size: 14px; }
+  .toolbar .primary { background: #4f46e5; color: #fff; border: none; cursor: pointer; white-space: nowrap; }
+  .toolbar .primary:hover { background: #4338ca; }
+  .toolbar .secondary { background: #fff; color: #333; border: 1px solid #d0d5dd; cursor: pointer; }
+  .toolbar .secondary:hover { background: #f3f4f6; }
+
+  .tag-filters { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+  .tag-filter { font-size: 12px; padding: 4px 10px; border-radius: 99px; border: 1px solid #d0d5dd; background: #fff; cursor: pointer; user-select: none; }
+  .tag-filter.active { background: #4f46e5; color: #fff; border-color: #4f46e5; }
+
+  .counter { font-size: 13px; color: #888; margin-bottom: 12px; }
+
+  .card { background: #fff; border-radius: 10px; margin-bottom: 10px; box-shadow: 0 1px 4px rgba(0,0,0,.06); overflow: hidden; transition: box-shadow .15s; }
+  .card:hover { box-shadow: 0 2px 8px rgba(0,0,0,.1); }
+
+  .card-header { display: flex; align-items: flex-start; gap: 10px; padding: 14px 16px; cursor: pointer; user-select: none; }
+  .card-header input[type=checkbox] { margin-top: 2px; width: 18px; height: 18px; accent-color: #4f46e5; flex-shrink: 0; }
+  .card-header .question { flex: 1; outline: none; font-size: 15px; line-height: 1.5; word-break: break-word; }
+  .card-header .question:empty::before { content: '输入问题...'; color: #bbb; }
+  .card-header .q-tags { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 4px; }
+  .card-header .q-tags .tag { font-size: 11px; padding: 2px 8px; background: #f3e8ff; color: #7c3aed; border-radius: 99px; display: flex; align-items: center; gap: 4px; }
+  .card-header .q-tags .tag .remove-tag { cursor: pointer; font-weight: bold; }
+  .card-header .q-tags .tag .remove-tag:hover { color: #dc2626; }
+  .card-header .q-add-tag { width: 70px; font-size: 11px; padding: 2px 6px; border: 1px solid #ddd; border-radius: 4px; margin-top: 4px; }
+
+  .card-body { display: none; padding: 0 16px 14px 44px; }
+  .card.open .card-body { display: block; }
+  .card-body .add-answer-btn-inline { font-size: 12px; padding: 4px 10px; border: 1px dashed #4f46e5; border-radius: 6px; background: none; cursor: pointer; color: #4f46e5; margin-top: 8px; }
+  .card-body .add-answer-btn-inline:hover { background: #eef2ff; }
+
+  .answer-item { border-top: 1px solid #eee; padding: 10px 0; display: flex; align-items: flex-start; gap: 10px; }
+  .answer-check { margin-top: 3px; width: 16px; height: 16px; accent-color: #4f46e5; flex-shrink: 0; cursor: pointer; }
+  .answer-content { flex: 1; }
+  .answer-text { outline: none; font-size: 14px; line-height: 1.6; color: #444; word-break: break-word; }
+  .answer-text:empty::before { content: '输入答案...'; color: #bbb; }
+  .answer-tags { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 4px; align-items: center; }
+  .answer-tags .tag { font-size: 11px; padding: 2px 8px; background: #eef2ff; color: #4f46e5; border-radius: 99px; display: flex; align-items: center; gap: 4px; }
+  .answer-tags .tag .remove-tag { cursor: pointer; font-weight: bold; }
+  .answer-tags .tag .remove-tag:hover { color: #dc2626; }
+  .answer-tags .add-tag-input { width: 70px; font-size: 11px; padding: 2px 6px; border: 1px solid #ddd; border-radius: 4px; }
+  .answer-del { font-size: 18px; cursor: pointer; color: #ccc; line-height: 1; padding: 2px; background: none; border: none; }
+  .answer-del:hover { color: #dc2626; }
+
+  .card-footer { display: flex; gap: 8px; align-items: center; padding: 0 16px 12px 44px; flex-wrap: wrap; }
+  .card.open .card-footer { display: flex; }
+  .card:not(.open) .card-footer { display: none; }
+  .card-actions { display: flex; gap: 4px; margin-left: auto; }
+  .card-actions button { font-size: 12px; padding: 3px 8px; border: 1px solid #e5e7eb; border-radius: 4px; background: #fff; cursor: pointer; color: #666; }
+  .card-actions button:hover { background: #f9fafb; }
+  .card-actions button.danger:hover { color: #dc2626; border-color: #dc2626; }
+
+  .empty { text-align: center; color: #aaa; padding: 60px 20px; font-size: 14px; }
+
+  @media (max-width: 500px) {
+    .container { padding: 12px; }
+    .card-header { padding: 12px; }
+    .card-body, .card-footer { padding-left: 12px; padding-right: 12px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>复习工具</h1>
+  <div class="toolbar">
+    <button class="primary" onclick="addCard()">＋ 新建卡片</button>
+    <button class="secondary" onclick="exportData()">导出</button>
+    <button class="secondary" onclick="resetAll()">重置所有</button>
+    <label class="secondary" style="cursor:pointer; padding:8px 12px; border:1px solid #d0d5dd; border-radius:6px; font-size:14px; display:inline-block;">
+      导入
+      <input type="file" accept=".json" onchange="importData(this)" style="display:none;">
+    </label>
+  </div>
+  <div class="tag-filters" id="tagFilters"></div>
+  <div class="counter" id="counter"></div>
+  <div id="cardList"></div>
+</div>
+<script>
+let cards = [];
+let allTags = new Set();
+
+const DEFAULT_CARDS = [
+  { id:1, question:"自己紹介をお願いします", tags:["自己紹介"], checked:false, answers:[{id:101,text:"1分以内に簡潔に（大学・学部・強みを含める）",tags:["ポイント"],checked:false}] },
+  { id:2, question:"小学校、中学校、高校でのあなたについて教えてください", tags:["自己紹介"], checked:false, answers:[] },
+  { id:3, question:"なぜその学部・学科を選んだのですか", tags:["自己紹介"], checked:false, answers:[] },
+  { id:4, question:"ゼミの研究内容を教えてください", tags:["自己紹介"], checked:false, answers:[] },
+  { id:5, question:"満足のいく大学生活でしたか", tags:["自己紹介"], checked:false, answers:[] },
+  { id:6, question:"得意・苦手科目を教えてください", tags:["自己紹介"], checked:false, answers:[] },
+  { id:7, question:"あなたの強みは何ですか？", tags:["強み・弱み"], checked:false, answers:[{id:201,text:"強み＋具体的なエピソード（結論→経験→活かし方）",tags:["ポイント"],checked:false}] },
+  { id:8, question:"あなたの弱みは何ですか？", tags:["強み・弱み"], checked:false, answers:[{id:202,text:"仕事で致命的でない弱みを選び、克服努力を伝える",tags:["ポイント"],checked:false}] },
+  { id:9, question:"周囲からどんな人だと言われますか？", tags:["強み・弱み"], checked:false, answers:[] },
+  { id:10, question:"友人からどんな人物だと言われますか", tags:["強み・弱み"], checked:false, answers:[] },
+  { id:11, question:"自分で自分をどんな人だと思いますか？", tags:["強み・弱み"], checked:false, answers:[] },
+  { id:12, question:"自身の性格的な強みと弱みを教えてください", tags:["強み・弱み"], checked:false, answers:[] },
+  { id:13, question:"集団でのあなたはどのような役割ですか", tags:["強み・弱み"], checked:false, answers:[] },
+  { id:14, question:"苦手な人はどんな人ですか。また、どのように対応していますか", tags:["強み・弱み"], checked:false, answers:[] },
+  { id:15, question:"学生時代に力を入れたこと（ガクチカ）を教えてください", tags:["ガクチカ"], checked:false, answers:[{id:301,text:"具体的な行動・成果・学びを整理して話す",tags:["ポイント"],checked:false}] },
+  { id:16, question:"チームで協力した経験を教えてください", tags:["ガクチカ"], checked:false, answers:[{id:302,text:"自分の役割・貢献・学びを明確に伝える",tags:["ポイント"],checked:false}] },
+  { id:17, question:"リーダー経験はありますか", tags:["ガクチカ"], checked:false, answers:[{id:303,text:"具体的なエピソードとリーダーとしての工夫を話す",tags:["ポイント"],checked:false}] },
+  { id:18, question:"どんなアルバイトをしていましたか。また、なぜそのアルバイトを始めようと思ったのですか", tags:["ガクチカ"], checked:false, answers:[] },
+  { id:19, question:"今までで一番辛かったことは何ですか", tags:["ガクチカ"], checked:false, answers:[] },
+  { id:20, question:"今までで一番嬉しかったことは何ですか", tags:["ガクチカ"], checked:false, answers:[] },
+  { id:21, question:"今まで最も挫折した経験は？", tags:["ガクチカ"], checked:false, answers:[] },
+  { id:22, question:"壁にぶつかったときはどう乗り越えますか？", tags:["ガクチカ"], checked:false, answers:[] },
+  { id:23, question:"なぜこの業界を志望するのですか？", tags:["志望動機"], checked:false, answers:[{id:401,text:"業界の魅力＋自分の経験や価値観とリンクさせる",tags:["ポイント"],checked:false}] },
+  { id:24, question:"なぜSIerを選んだのですか？", tags:["志望動機"], checked:false, answers:[{id:402,text:"SIerの特徴（上流工程・幅広い案件）を理解し、理由を伝える",tags:["ポイント"],checked:false}] },
+  { id:25, question:"なぜ当社を志望するのですか？", tags:["志望動機"], checked:false, answers:[{id:403,text:"企業の強み＋自分の目指すキャリアを結びつける",tags:["ポイント"],checked:false}] },
+  { id:26, question:"就活の軸を教えてください", tags:["志望動機"], checked:false, answers:[] },
+  { id:27, question:"業界選びの軸を教えてください", tags:["志望動機"], checked:false, answers:[] },
+  { id:28, question:"この業界を見ている理由は？", tags:["志望動機"], checked:false, answers:[] },
+  { id:29, question:"インターンの志望動機を教えてください", tags:["志望動機"], checked:false, answers:[] },
+  { id:30, question:"入社後にやりたいことは何ですか？", tags:["キャリアプラン"], checked:false, answers:[{id:501,text:"企業の業務内容と自分のスキル・興味を結びつける",tags:["ポイント"],checked:false}] },
+  { id:31, question:"将来のキャリアプランを教えてください", tags:["キャリアプラン"], checked:false, answers:[{id:502,text:"5年後・10年後のビジョンを具体的に話す",tags:["ポイント"],checked:false}] },
+  { id:32, question:"具体的にどんなことに挑戦したいですか？", tags:["キャリアプラン"], checked:false, answers:[] },
+  { id:33, question:"チームで働く上で大切にしていることは？", tags:["パーソナル"], checked:false, answers:[{id:601,text:"役割理解・相手視点・積極的な意見交換の重要性を話す",tags:["ポイント"],checked:false}] },
+  { id:34, question:"意見が対立したとき、どう対応しますか？", tags:["パーソナル"], checked:false, answers:[{id:602,text:"相手の意見を尊重し、妥協点を見つけた経験を話す",tags:["ポイント"],checked:false}] },
+  { id:35, question:"自分の提案を否定された時、どう対応しますか？", tags:["パーソナル"], checked:false, answers:[] },
+  { id:36, question:"周囲と円滑にコミュニケーションを取る方法は？", tags:["パーソナル"], checked:false, answers:[{id:603,text:"相手の意図を理解し、適切に伝える工夫を説明",tags:["ポイント"],checked:false}] },
+  { id:37, question:"ストレスが溜まったときの対処法は？", tags:["パーソナル"], checked:false, answers:[{id:604,text:"具体的なリフレッシュ方法を伝える（仕事に影響しない範囲）",tags:["ポイント"],checked:false}] },
+  { id:38, question:"ストレス発散法を教えてください", tags:["パーソナル"], checked:false, answers:[] },
+  { id:39, question:"趣味/特技を教えてください", tags:["その他"], checked:false, answers:[] },
+  { id:40, question:"最近気になっているニュースはありますか", tags:["その他"], checked:false, answers:[] },
+  { id:41, question:"最近読んだ本の中でオススメはありますか", tags:["その他"], checked:false, answers:[] },
+  { id:42, question:"他社の選考状況を教えてください", tags:["その他"], checked:false, answers:[] },
+  { id:43, question:"最後に何か言いたいことはありますか", tags:["その他"], checked:false, answers:[] },
+  { id:44, question:"最近関心を持っていることは何ですか", tags:["その他"], checked:false, answers:[] },
+  { id:45, question:"最近失敗したことは何ですか。そこから何を学びましたか", tags:["その他"], checked:false, answers:[] }
+];
+
+function load() {
+  try {
+    const saved = localStorage.getItem('review_cards_v2');
+    if (saved) cards = JSON.parse(saved);
+    else cards = JSON.parse(JSON.stringify(DEFAULT_CARDS));
+  } catch(e) { cards = JSON.parse(JSON.stringify(DEFAULT_CARDS)); }
+  if (!cards.length) cards = JSON.parse(JSON.stringify(DEFAULT_CARDS));
+  refreshTags();
+  render();
+}
+
+function resetAll() {
+  if (confirm('确定要重置所有数据吗？你对卡片的修改将丢失，恢复为默认 45 题。')) {
+    cards = JSON.parse(JSON.stringify(DEFAULT_CARDS));
+    localStorage.removeItem('review_cards_v2');
+    refreshTags();
+    render();
+  }
+}
+
+function save() { localStorage.setItem('review_cards_v2', JSON.stringify(cards)); refreshTags(); }
+function nextId() { return Date.now(); }
+
+function addCard() {
+  cards.unshift({ id: nextId(), question: '', tags: [], checked: false, answers: [] });
+  save(); render();
+}
+
+function deleteCard(id) {
+  cards = cards.filter(c => c.id !== id);
+  save(); render();
+}
+
+function toggleCard(id) {
+  const card = cards.find(c => c.id === id);
+  if (card) { card.checked = !card.checked; save(); render(); }
+}
+
+function openCard(id, el) {
+  if (window.getSelection().toString()) return;
+  el.classList.toggle('open');
+}
+
+function onHeaderClick(e, id, el) {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON' || e.target.closest('button')) return;
+  if (window.getSelection().toString()) return;
+  openCard(id, el);
+}
+
+function updateQuestion(id, val) {
+  const card = cards.find(c => c.id === id);
+  if (card) { card.question = val; save(); }
+}
+
+function addCardTag(id, tag, input) {
+  tag = tag.trim(); if (!tag) return;
+  const card = cards.find(c => c.id === id);
+  if (card && !card.tags.includes(tag)) { card.tags.push(tag); save(); render(); }
+  if (input) input.value = '';
+}
+
+function removeCardTag(id, tag) {
+  const card = cards.find(c => c.id === id);
+  if (card) { card.tags = card.tags.filter(t => t !== tag); save(); render(); }
+}
+
+function addAnswer(cardId) {
+  const card = cards.find(c => c.id === cardId);
+  if (card) { card.answers.push({ id: nextId(), text: '', tags: [], checked: false }); save(); render(); }
+}
+
+function deleteAnswer(cardId, answerId) {
+  const card = cards.find(c => c.id === cardId);
+  if (card) { card.answers = card.answers.filter(a => a.id !== answerId); save(); render(); }
+}
+
+function updateAnswer(cardId, answerId, val) {
+  const card = cards.find(c => c.id === cardId);
+  if (!card) return;
+  const answer = card.answers.find(a => a.id === answerId);
+  if (answer) { answer.text = val; save(); }
+}
+
+function toggleAnswer(cardId, answerId) {
+  const card = cards.find(c => c.id === cardId);
+  if (!card) return;
+  const answer = card.answers.find(a => a.id === answerId);
+  if (answer) { answer.checked = !answer.checked; save(); render(); }
+}
+
+function addAnswerTag(cardId, answerId, tag, input) {
+  tag = tag.trim(); if (!tag) return;
+  const card = cards.find(c => c.id === cardId);
+  if (!card) return;
+  const answer = card.answers.find(a => a.id === answerId);
+  if (answer && !answer.tags.includes(tag)) { answer.tags.push(tag); save(); render(); }
+  if (input) input.value = '';
+}
+
+function removeAnswerTag(cardId, answerId, tag) {
+  const card = cards.find(c => c.id === cardId);
+  if (!card) return;
+  const answer = card.answers.find(a => a.id === answerId);
+  if (answer) { answer.tags = answer.tags.filter(t => t !== tag); save(); render(); }
+}
+
+function refreshTags() {
+  allTags = new Set();
+  cards.forEach(c => {
+    (c.tags||[]).forEach(t => allTags.add(t));
+    (c.answers||[]).forEach(a => (a.tags||[]).forEach(t => allTags.add(t)));
+  });
+}
+
+let activeTag = null;
+function filterByTag(tag) {
+  activeTag = (activeTag === tag) ? null : tag;
+  render();
+}
+
+function matchTag(card) {
+  if (!activeTag) return true;
+  if ((card.tags||[]).includes(activeTag)) return true;
+  return (card.answers||[]).some(a => (a.tags||[]).includes(activeTag));
+}
+
+function render() {
+  const tagContainer = document.getElementById('tagFilters');
+  if (allTags.size === 0) { tagContainer.innerHTML = ''; }
+  else {
+    tagContainer.innerHTML = [...allTags].map(t =>
+      `<span class="tag-filter${activeTag === t ? ' active' : ''}" onclick="filterByTag('${t.replace(/'/g, "\\'")}')">${t}</span>`
+    ).join('');
+  }
+
+  let filtered = activeTag ? cards.filter(matchTag) : cards;
+  let totalAns = filtered.reduce((sum, c) => sum + (c.answers||[]).length, 0);
+  let checkedAns = filtered.reduce((sum, c) => sum + (c.answers||[]).filter(a => a.checked).length, 0);
+  document.getElementById('counter').textContent =
+    `共 ${cards.length} 道题 / 显示 ${filtered.length} 道 / ${totalAns} 个答案 / 已掌握 ${checkedAns} 个`;
+
+  const list = document.getElementById('cardList');
+  if (!filtered.length) {
+    list.innerHTML = '<div class="empty">暂无卡片，点击「＋ 新建卡片」添加。</div>';
+    return;
+  }
+
+  list.innerHTML = filtered.map(c => {
+    const answersHtml = (c.answers||[]).map(a => `
+      <div class="answer-item">
+        <input type="checkbox" class="answer-check" ${a.checked ? 'checked' : ''}
+               onclick="event.stopPropagation(); toggleAnswer(${c.id}, ${a.id})" title="标记已掌握">
+        <div class="answer-content">
+          <div class="answer-text" contenteditable="true"
+               onblur="updateAnswer(${c.id}, ${a.id}, this.innerText)"
+               onkeydown="if(event.key==='Enter'&&!event.shiftKey){this.blur()}">${a.text}</div>
+          <div class="answer-tags">
+            ${(a.tags||[]).map(t => `<span class="tag">${t}<span class="remove-tag"
+              onclick="event.stopPropagation();removeAnswerTag(${c.id},${a.id},'${t.replace(/'/g,"\\'")}')">&times;</span></span>`).join('')}
+            <input class="add-tag-input" placeholder="标签..."
+                   onkeydown="if(event.key==='Enter'){event.stopPropagation();addAnswerTag(${c.id},${a.id},this.value,this)}"
+                   onclick="event.stopPropagation()">
+          </div>
+        </div>
+        <button class="answer-del" onclick="event.stopPropagation();deleteAnswer(${c.id},${a.id})" title="删除答案">&times;</button>
+      </div>
+    `).join('');
+
+    return `
+    <div class="card${c.checked ? ' open' : ''}" id="card-${c.id}">
+      <div class="card-header" onclick="onHeaderClick(event, ${c.id}, this.parentElement)">
+        <input type="checkbox" ${c.checked ? 'checked' : ''}
+               onclick="event.stopPropagation();toggleCard(${c.id})" title="标记整题已掌握">
+        <div style="flex:1;">
+          <div class="question" contenteditable="true"
+               onblur="updateQuestion(${c.id}, this.innerText)"
+               onkeydown="if(event.key==='Enter'&&!event.shiftKey){this.blur()}">${c.question}</div>
+          <div class="q-tags">
+            ${(c.tags||[]).map(t => `<span class="tag">${t}<span class="remove-tag"
+              onclick="event.stopPropagation();removeCardTag(${c.id},'${t.replace(/'/g,"\\'")}')">&times;</span></span>`).join('')}
+            <input class="q-add-tag" placeholder="标签..."
+                   onkeydown="if(event.key==='Enter'){event.stopPropagation();addCardTag(${c.id},this.value,this)}"
+                   onclick="event.stopPropagation()">
+          </div>
+        </div>
+      </div>
+      <div class="card-body">
+        ${answersHtml}
+        <button class="add-answer-btn-inline" onclick="event.stopPropagation();addAnswer(${c.id})">＋ 添加答案</button>
+      </div>
+      <div class="card-footer">
+        <div class="card-actions">
+          <button class="danger" onclick="event.stopPropagation();deleteCard(${c.id})">删除卡片</button>
+        </div>
+      </div>
+    </div>
+    `;
+  }).join('');
+}
+
+function exportData() {
+  const blob = new Blob([JSON.stringify(cards, null, 2)], {type: 'application/json'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = 'review_backup.json'; a.click();
+}
+
+function importData(input) {
+  const file = input.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (Array.isArray(data)) { cards = data; save(); render(); }
+    } catch(ex) { alert('JSON 文件格式不正确，请检查后重试。'); }
+  };
+  reader.readAsText(file); input.value = '';
+}
+
+load();
+</script>
+</body>
+</html>
