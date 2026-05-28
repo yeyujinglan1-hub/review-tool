@@ -20,29 +20,27 @@ body {
 button { font-family: inherit; cursor: pointer; }
 input { font-family: inherit; }
 
-/* ── top bar ── */
+/* top bar */
 .topbar {
   background: var(--card); border-bottom: 1px solid var(--border);
   padding: 12px 20px; display: flex; align-items: center; gap: 12px;
   flex-wrap: wrap; position: sticky; top: 0; z-index: 10;
 }
 .topbar h1 { font-size: 1.1em; font-weight: 600; margin-right: auto; white-space: nowrap; }
-.topbar .mode-tabs { display: flex; gap: 0; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); }
-.topbar .mode-tab {
-  padding: 6px 18px; font-size: 13px; border: none; background: var(--card); color: var(--subtle);
-}
+.topbar .mode-tabs { display: flex; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); }
+.topbar .mode-tab { padding: 6px 18px; font-size: 13px; border: none; background: var(--card); color: var(--subtle); }
 .topbar .mode-tab.active { background: var(--accent); color: #fff; }
 .topbar button { padding: 6px 14px; font-size: 13px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--card); color: var(--text); white-space: nowrap; }
 .topbar button.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
 .topbar button:hover { opacity: .85; }
 
-/* ── layout ── */
-.layout { display: flex; max-width: 1200px; margin: 0 auto; min-height: calc(100vh - 56px); }
+/* layout */
+.layout { display: flex; max-width: 1300px; margin: 0 auto; min-height: calc(100vh - 56px); }
 .sidebar { width: 200px; padding: 20px 16px; border-right: 1px solid var(--border); flex-shrink: 0; }
 .main { flex: 1; padding: 20px; overflow: auto; }
 .panel { width: 220px; padding: 20px 16px; border-left: 1px solid var(--border); flex-shrink: 0; }
 
-/* ── sidebar tags ── */
+/* sidebar */
 .sidebar h3 { font-size: 12px; color: var(--subtle); text-transform: uppercase; margin-bottom: 10px; letter-spacing: .5px; }
 .sidebar .tag-item {
   display: flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 6px;
@@ -53,28 +51,58 @@ input { font-family: inherit; }
 .sidebar .tag-count { margin-left: auto; font-size: 11px; color: var(--subtle); }
 .sidebar .tag-item.active .tag-count { color: var(--accent); }
 
-/* ── cards ── */
+/* cards */
 .card {
   background: var(--card); border-radius: var(--radius); margin-bottom: 8px;
   box-shadow: var(--shadow); overflow: hidden; transition: box-shadow .15s;
+  position: relative;
 }
 .card:hover { box-shadow: 0 2px 8px rgba(0,0,0,.06); }
+.card.dragging { opacity: .5; box-shadow: 0 4px 16px rgba(0,0,0,.12); }
+.card.drag-over { border: 2px dashed var(--accent); }
+
 .card-header {
-  display: flex; align-items: flex-start; gap: 10px; padding: 14px 16px; cursor: pointer;
+  display: flex; align-items: flex-start; gap: 8px; padding: 12px 16px; cursor: pointer;
 }
+.drag-handle {
+  cursor: grab; color: #ccc; font-size: 16px; line-height: 1; padding: 2px 0;
+  user-select: none; flex-shrink: 0;
+}
+.drag-handle:hover { color: var(--subtle); }
+.drag-handle:active { cursor: grabbing; }
 .card-header .card-check { margin-top: 2px; width: 18px; height: 18px; accent-color: var(--accent); flex-shrink: 0; }
 .card-header .card-q { flex: 1; outline: none; font-size: 14px; line-height: 1.5; word-break: break-word; }
 .card-header .card-q:empty::before { content: '输入问题...'; color: #bbb; }
-.card-header .card-num { font-size: 12px; color: var(--subtle); flex-shrink: 0; }
+.card-header .card-num { font-size: 12px; color: var(--subtle); flex-shrink: 0; white-space: nowrap; }
+
 .card-body { display: none; padding: 0 16px 14px 44px; }
 .card.open .card-body { display: block; }
-.answer-item { display: flex; gap: 10px; align-items: flex-start; padding: 8px 0; border-top: 1px solid var(--border); }
-.answer-item:first-child { border-top: none; }
+
+.card-section-title { font-size: 11px; color: var(--subtle); margin: 8px 0 4px; padding-top: 8px; border-top: 1px dashed var(--border); }
+.card-section-title:first-child { border-top: none; padding-top: 0; margin-top: 0; }
+
+.answer-item { display: flex; gap: 10px; align-items: flex-start; padding: 6px 0; }
 .answer-item .ans-check { width: 16px; height: 16px; accent-color: var(--accent); margin-top: 3px; flex-shrink: 0; }
 .answer-item .ans-text { flex: 1; outline: none; font-size: 13px; line-height: 1.6; color: #444; word-break: break-word; }
 .answer-item .ans-text:empty::before { content: '输入答案...'; color: #bbb; }
 .answer-item .ans-del { font-size: 16px; cursor: pointer; color: #ccc; background: none; border: none; line-height: 1; }
 .answer-item .ans-del:hover { color: #dc2626; }
+
+/* sub-question */
+.sub-q {
+  margin: 6px 0; border-left: 3px solid var(--accent-light); border-radius: 0 var(--radius) var(--radius) 0;
+  background: #fafbfc; padding: 8px 12px;
+}
+.sub-q-header { display: flex; align-items: flex-start; gap: 6px; cursor: pointer; }
+.sub-q-header .sub-check { width: 15px; height: 15px; accent-color: var(--accent); margin-top: 2px; flex-shrink: 0; }
+.sub-q-header .sub-text { flex: 1; outline: none; font-size: 13px; line-height: 1.5; word-break: break-word; }
+.sub-q-header .sub-text:empty::before { content: '输入次级问题...'; color: #bbb; }
+.sub-q-body { display: none; padding-left: 21px; margin-top: 4px; }
+.sub-q.open .sub-q-body { display: block; }
+.sub-q .sub-del { font-size: 15px; cursor: pointer; color: #ccc; background: none; border: none; line-height: 1; flex-shrink: 0; }
+.sub-q .sub-del:hover { color: #dc2626; }
+
+/* tags */
 .tag-row { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 4px; }
 .tag {
   font-size: 10px; padding: 2px 7px; border-radius: 99px; display: inline-flex; align-items: center; gap: 3px; line-height: 1.4;
@@ -83,17 +111,21 @@ input { font-family: inherit; }
 .tag.a-tag { background: var(--tag-a); color: var(--tag-a-text); }
 .tag .tag-x { cursor: pointer; font-weight: bold; }
 .tag .tag-x:hover { opacity: .6; }
-.card-footer { display: none; padding: 0 16px 12px 44px; }
-.card.open .card-footer { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-.card-footer .add-ans-btn { font-size: 12px; padding: 3px 10px; border: 1px dashed var(--accent); border-radius: 4px; background: none; color: var(--accent); cursor: pointer; }
-.card-footer .add-ans-btn:hover { background: var(--accent-light); }
-.card-footer .del-card-btn { font-size: 12px; padding: 3px 10px; border: 1px solid #e5e7eb; border-radius: 4px; background: #fff; color: #666; margin-left: auto; }
-.card-footer .del-card-btn:hover { color: #dc2626; border-color: #dc2626; }
 .tag-input { width: 72px; font-size: 10px; padding: 2px 6px; border: 1px solid #ddd; border-radius: 4px; }
+
+.card-footer { display: none; padding: 0 16px 12px 44px; gap: 8px; align-items: center; flex-wrap: wrap; }
+.card.open .card-footer { display: flex; }
+.card-footer button { font-size: 12px; padding: 3px 10px; border-radius: 4px; }
+.card-footer .add-ans-btn { border: 1px dashed var(--accent); background: none; color: var(--accent); }
+.card-footer .add-ans-btn:hover { background: var(--accent-light); }
+.card-footer .add-sub-btn { border: 1px dashed #7c3aed; background: none; color: #7c3aed; }
+.card-footer .add-sub-btn:hover { background: #f3e8ff; }
+.card-footer .del-card-btn { border: 1px solid #e5e7eb; background: #fff; color: #666; margin-left: auto; }
+.card-footer .del-card-btn:hover { color: #dc2626; border-color: #dc2626; }
 
 .empty-state { text-align: center; color: #aaa; padding: 80px 20px; font-size: 14px; }
 
-/* ── right panel ── */
+/* right panel */
 .panel h3 { font-size: 12px; color: var(--subtle); text-transform: uppercase; margin-bottom: 12px; letter-spacing: .5px; }
 .panel .stat { display: flex; justify-content: space-between; padding: 4px 0; font-size: 13px; }
 .panel .stat .val { font-weight: 600; }
@@ -101,7 +133,7 @@ input { font-family: inherit; }
 .panel .tag-bar .bar { flex: 1; height: 6px; background: #eee; border-radius: 3px; overflow: hidden; }
 .panel .tag-bar .bar-fill { height: 100%; background: var(--accent); border-radius: 3px; }
 
-/* ── quiz mode ── */
+/* quiz mode */
 #quizView { display: none; flex-direction: column; align-items: center; justify-content: center; min-height: calc(100vh - 56px); padding: 40px 20px; }
 body.quiz-mode .layout { display: none; }
 body.quiz-mode #quizView { display: flex; }
@@ -127,7 +159,7 @@ body.quiz-mode #quizView { display: flex; }
 .quiz-end .stat-grid div { padding: 8px; background: #f9fafb; border-radius: 6px; }
 .quiz-end .tag-weak { font-size: 12px; color: var(--subtle); margin-top: 8px; }
 
-/* ── responsive ── */
+/* responsive */
 @media (max-width: 800px) {
   .layout { flex-direction: column; }
   .sidebar { width: 100%; border-right: none; border-bottom: 1px solid var(--border); display: flex; gap: 6px; flex-wrap: wrap; padding: 12px; }
@@ -136,18 +168,17 @@ body.quiz-mode #quizView { display: flex; }
   .panel { width: 100%; border-left: none; border-top: 1px solid var(--border); padding: 12px; }
   .topbar h1 { font-size: .95em; }
 }
-
 @media print {
-  .topbar, .sidebar, .panel, .card-footer, .card-actions, .tag-input { display: none !important; }
+  .topbar, .sidebar, .panel, .card-footer, .tag-input, .drag-handle, .ans-del, .sub-del { display: none !important; }
   .card { break-inside: avoid; box-shadow: none; border: 1px solid #eee; }
-  .card-body { display: block !important; }
+  .card-body, .sub-q-body { display: block !important; }
+  .sub-q { border-left: 1px solid #eee; background: none; }
   body { background: #fff; }
 }
 </style>
 </head>
 <body>
 
-<!-- ── Top Bar ── -->
 <div class="topbar">
   <h1>面接対策 復習ツール</h1>
   <div class="mode-tabs">
@@ -160,100 +191,156 @@ body.quiz-mode #quizView { display: flex; }
   <button class="primary" onclick="addCard()">＋ 新建</button>
 </div>
 
-<!-- ── Edit Mode ── -->
 <div class="layout" id="editLayout">
   <div class="sidebar" id="tagSidebar"></div>
   <div class="main" id="cardList"></div>
   <div class="panel" id="statPanel"></div>
 </div>
 
-<!-- ── Quiz Mode ── -->
-<div id="quizView">
-  <div id="quizContent"></div>
-</div>
+<div id="quizView"><div id="quizContent"></div></div>
 
 <script>
-// ═══════════════ DATA ═══════════════
+// ═══════════ DATA ═══════════
 let cards = [];
 let allTags = new Set();
 let currentMode = 'edit';
 let quizState = null;
 
+// Default cards — each gets subQuestions=[], answers entries get tags=[]
 const DEFAULT_CARDS = [
-  { id:1, q:"自己紹介をお願いします", tags:["自己紹介"], checked:false, answers:[{ id:101, text:"1分以内に簡潔に（大学・学部・強みを含める）", tags:["ポイント"], checked:false }] },
-  { id:2, q:"小学校、中学校、高校でのあなたについて教えてください", tags:["自己紹介"], checked:false, answers:[] },
-  { id:3, q:"なぜその学部・学科を選んだのですか", tags:["自己紹介"], checked:false, answers:[] },
-  { id:4, q:"ゼミの研究内容を教えてください", tags:["自己紹介"], checked:false, answers:[] },
-  { id:5, q:"満足のいく大学生活でしたか", tags:["自己紹介"], checked:false, answers:[] },
-  { id:6, q:"得意・苦手科目を教えてください", tags:["自己紹介"], checked:false, answers:[] },
-  { id:7, q:"あなたの強みは何ですか？", tags:["強み・弱み"], checked:false, answers:[{ id:201, text:"強み＋具体的なエピソード（結論→経験→活かし方）", tags:["ポイント"], checked:false }] },
-  { id:8, q:"あなたの弱みは何ですか？", tags:["強み・弱み"], checked:false, answers:[{ id:202, text:"仕事で致命的でない弱みを選び、克服努力を伝える", tags:["ポイント"], checked:false }] },
-  { id:9, q:"周囲からどんな人だと言われますか？", tags:["強み・弱み"], checked:false, answers:[] },
-  { id:10, q:"友人からどんな人物だと言われますか", tags:["強み・弱み"], checked:false, answers:[] },
-  { id:11, q:"自分で自分をどんな人だと思いますか？", tags:["強み・弱み"], checked:false, answers:[] },
-  { id:12, q:"自身の性格的な強みと弱みを教えてください", tags:["強み・弱み"], checked:false, answers:[] },
-  { id:13, q:"集団でのあなたはどのような役割ですか", tags:["強み・弱み"], checked:false, answers:[] },
-  { id:14, q:"苦手な人はどんな人ですか。また、どのように対応していますか", tags:["強み・弱み"], checked:false, answers:[] },
-  { id:15, q:"学生時代に力を入れたこと（ガクチカ）を教えてください", tags:["ガクチカ"], checked:false, answers:[{ id:301, text:"具体的な行動・成果・学びを整理して話す", tags:["ポイント"], checked:false }] },
-  { id:16, q:"チームで協力した経験を教えてください", tags:["ガクチカ"], checked:false, answers:[{ id:302, text:"自分の役割・貢献・学びを明確に伝える", tags:["ポイント"], checked:false }] },
-  { id:17, q:"リーダー経験はありますか", tags:["ガクチカ"], checked:false, answers:[{ id:303, text:"具体的なエピソードとリーダーとしての工夫を話す", tags:["ポイント"], checked:false }] },
-  { id:18, q:"どんなアルバイトをしていましたか。また、なぜそのアルバイトを始めようと思ったのですか", tags:["ガクチカ"], checked:false, answers:[] },
-  { id:19, q:"今までで一番辛かったことは何ですか", tags:["ガクチカ"], checked:false, answers:[] },
-  { id:20, q:"今までで一番嬉しかったことは何ですか", tags:["ガクチカ"], checked:false, answers:[] },
-  { id:21, q:"今まで最も挫折した経験は？", tags:["ガクチカ"], checked:false, answers:[] },
-  { id:22, q:"壁にぶつかったときはどう乗り越えますか？", tags:["ガクチカ"], checked:false, answers:[] },
-  { id:23, q:"なぜこの業界を志望するのですか？", tags:["志望動機"], checked:false, answers:[{ id:401, text:"業界の魅力＋自分の経験や価値観とリンクさせる", tags:["ポイント"], checked:false }] },
-  { id:24, q:"なぜSIerを選んだのですか？", tags:["志望動機"], checked:false, answers:[{ id:402, text:"SIerの特徴（上流工程・幅広い案件）を理解し、理由を伝える", tags:["ポイント"], checked:false }] },
-  { id:25, q:"なぜ当社を志望するのですか？", tags:["志望動機"], checked:false, answers:[{ id:403, text:"企業の強み＋自分の目指すキャリアを結びつける", tags:["ポイント"], checked:false }] },
-  { id:26, q:"就活の軸を教えてください", tags:["志望動機"], checked:false, answers:[] },
-  { id:27, q:"業界選びの軸を教えてください", tags:["志望動機"], checked:false, answers:[] },
-  { id:28, q:"この業界を見ている理由は？", tags:["志望動機"], checked:false, answers:[] },
-  { id:29, q:"インターンの志望動機を教えてください", tags:["志望動機"], checked:false, answers:[] },
-  { id:30, q:"入社後にやりたいことは何ですか？", tags:["キャリア"], checked:false, answers:[{ id:501, text:"企業の業務内容と自分のスキル・興味を結びつける", tags:["ポイント"], checked:false }] },
-  { id:31, q:"将来のキャリアプランを教えてください", tags:["キャリア"], checked:false, answers:[{ id:502, text:"5年後・10年後のビジョンを具体的に話す", tags:["ポイント"], checked:false }] },
-  { id:32, q:"具体的にどんなことに挑戦したいですか？", tags:["キャリア"], checked:false, answers:[] },
-  { id:33, q:"チームで働く上で大切にしていることは？", tags:["パーソナル"], checked:false, answers:[{ id:601, text:"役割理解・相手視点・積極的な意見交換の重要性を話す", tags:["ポイント"], checked:false }] },
-  { id:34, q:"意見が対立したとき、どう対応しますか？", tags:["パーソナル"], checked:false, answers:[{ id:602, text:"相手の意見を尊重し、妥協点を見つけた経験を話す", tags:["ポイント"], checked:false }] },
-  { id:35, q:"自分の提案を否定された時、どう対応しますか？", tags:["パーソナル"], checked:false, answers:[] },
-  { id:36, q:"周囲と円滑にコミュニケーションを取る方法は？", tags:["パーソナル"], checked:false, answers:[{ id:603, text:"相手の意図を理解し、適切に伝える工夫を説明", tags:["ポイント"], checked:false }] },
-  { id:37, q:"ストレスが溜まったときの対処法は？", tags:["パーソナル"], checked:false, answers:[{ id:604, text:"具体的なリフレッシュ方法を伝える（仕事に影響しない範囲）", tags:["ポイント"], checked:false }] },
-  { id:38, q:"ストレス発散法を教えてください", tags:["パーソナル"], checked:false, answers:[] },
-  { id:39, q:"趣味/特技を教えてください", tags:["その他"], checked:false, answers:[] },
-  { id:40, q:"最近気になっているニュースはありますか", tags:["その他"], checked:false, answers:[] },
-  { id:41, q:"最近読んだ本の中でオススメはありますか", tags:["その他"], checked:false, answers:[] },
-  { id:42, q:"他社の選考状況を教えてください", tags:["その他"], checked:false, answers:[] },
-  { id:43, q:"最後に何か言いたいことはありますか", tags:["その他"], checked:false, answers:[] },
-  { id:44, q:"最近関心を持っていることは何ですか", tags:["その他"], checked:false, answers:[] },
-  { id:45, q:"最近失敗したことは何ですか。そこから何を学びましたか", tags:["その他"], checked:false, answers:[] }
+  { id:1, q:"自己紹介をお願いします", tags:["自己紹介"], checked:false, subQuestions:[], answers:[{ id:101, text:"1分以内に簡潔に（大学・学部・強みを含める）", tags:["ポイント"], checked:false }] },
+  { id:2, q:"小学校、中学校、高校でのあなたについて教えてください", tags:["自己紹介"], checked:false, subQuestions:[], answers:[] },
+  { id:3, q:"なぜその学部・学科を選んだのですか", tags:["自己紹介"], checked:false, subQuestions:[], answers:[] },
+  { id:4, q:"ゼミの研究内容を教えてください", tags:["自己紹介"], checked:false, subQuestions:[], answers:[] },
+  { id:5, q:"満足のいく大学生活でしたか", tags:["自己紹介"], checked:false, subQuestions:[], answers:[] },
+  { id:6, q:"得意・苦手科目を教えてください", tags:["自己紹介"], checked:false, subQuestions:[], answers:[] },
+  { id:7, q:"あなたの強みは何ですか？", tags:["強み・弱み"], checked:false, subQuestions:[], answers:[{ id:201, text:"強み＋具体的なエピソード（結論→経験→活かし方）", tags:["ポイント"], checked:false }] },
+  { id:8, q:"あなたの弱みは何ですか？", tags:["強み・弱み"], checked:false, subQuestions:[], answers:[{ id:202, text:"仕事で致命的でない弱みを選び、克服努力を伝える", tags:["ポイント"], checked:false }] },
+  { id:9, q:"周囲からどんな人だと言われますか？", tags:["強み・弱み"], checked:false, subQuestions:[], answers:[] },
+  { id:10, q:"友人からどんな人物だと言われますか", tags:["強み・弱み"], checked:false, subQuestions:[], answers:[] },
+  { id:11, q:"自分で自分をどんな人だと思いますか？", tags:["強み・弱み"], checked:false, subQuestions:[], answers:[] },
+  { id:12, q:"自身の性格的な強みと弱みを教えてください", tags:["強み・弱み"], checked:false, subQuestions:[], answers:[] },
+  { id:13, q:"集団でのあなたはどのような役割ですか", tags:["強み・弱み"], checked:false, subQuestions:[], answers:[] },
+  { id:14, q:"苦手な人はどんな人ですか。また、どのように対応していますか", tags:["強み・弱み"], checked:false, subQuestions:[], answers:[] },
+  { id:15, q:"学生時代に力を入れたこと（ガクチカ）を教えてください", tags:["ガクチカ"], checked:false, subQuestions:[], answers:[{ id:301, text:"具体的な行動・成果・学びを整理して話す", tags:["ポイント"], checked:false }] },
+  { id:16, q:"チームで協力した経験を教えてください", tags:["ガクチカ"], checked:false, subQuestions:[], answers:[{ id:302, text:"自分の役割・貢献・学びを明確に伝える", tags:["ポイント"], checked:false }] },
+  { id:17, q:"リーダー経験はありますか", tags:["ガクチカ"], checked:false, subQuestions:[], answers:[{ id:303, text:"具体的なエピソードとリーダーとしての工夫を話す", tags:["ポイント"], checked:false }] },
+  { id:18, q:"どんなアルバイトをしていましたか。また、なぜそのアルバイトを始めようと思ったのですか", tags:["ガクチカ"], checked:false, subQuestions:[], answers:[] },
+  { id:19, q:"今までで一番辛かったことは何ですか", tags:["ガクチカ"], checked:false, subQuestions:[], answers:[] },
+  { id:20, q:"今までで一番嬉しかったことは何ですか", tags:["ガクチカ"], checked:false, subQuestions:[], answers:[] },
+  { id:21, q:"今まで最も挫折した経験は？", tags:["ガクチカ"], checked:false, subQuestions:[], answers:[] },
+  { id:22, q:"壁にぶつかったときはどう乗り越えますか？", tags:["ガクチカ"], checked:false, subQuestions:[], answers:[] },
+  { id:23, q:"なぜこの業界を志望するのですか？", tags:["志望動機"], checked:false, subQuestions:[], answers:[{ id:401, text:"業界の魅力＋自分の経験や価値観とリンクさせる", tags:["ポイント"], checked:false }] },
+  { id:24, q:"なぜSIerを選んだのですか？", tags:["志望動機"], checked:false, subQuestions:[], answers:[{ id:402, text:"SIerの特徴（上流工程・幅広い案件）を理解し、理由を伝える", tags:["ポイント"], checked:false }] },
+  { id:25, q:"なぜ当社を志望するのですか？", tags:["志望動機"], checked:false, subQuestions:[], answers:[{ id:403, text:"企業の強み＋自分の目指すキャリアを結びつける", tags:["ポイント"], checked:false }] },
+  { id:26, q:"就活の軸を教えてください", tags:["志望動機"], checked:false, subQuestions:[], answers:[] },
+  { id:27, q:"業界選びの軸を教えてください", tags:["志望動機"], checked:false, subQuestions:[], answers:[] },
+  { id:28, q:"この業界を見ている理由は？", tags:["志望動機"], checked:false, subQuestions:[], answers:[] },
+  { id:29, q:"インターンの志望動機を教えてください", tags:["志望動機"], checked:false, subQuestions:[], answers:[] },
+  { id:30, q:"入社後にやりたいことは何ですか？", tags:["キャリア"], checked:false, subQuestions:[], answers:[{ id:501, text:"企業の業務内容と自分のスキル・興味を結びつける", tags:["ポイント"], checked:false }] },
+  { id:31, q:"将来のキャリアプランを教えてください", tags:["キャリア"], checked:false, subQuestions:[], answers:[{ id:502, text:"5年後・10年後のビジョンを具体的に話す", tags:["ポイント"], checked:false }] },
+  { id:32, q:"具体的にどんなことに挑戦したいですか？", tags:["キャリア"], checked:false, subQuestions:[], answers:[] },
+  { id:33, q:"チームで働く上で大切にしていることは？", tags:["パーソナル"], checked:false, subQuestions:[], answers:[{ id:601, text:"役割理解・相手視点・積極的な意見交換の重要性を話す", tags:["ポイント"], checked:false }] },
+  { id:34, q:"意見が対立したとき、どう対応しますか？", tags:["パーソナル"], checked:false, subQuestions:[], answers:[{ id:602, text:"相手の意見を尊重し、妥協点を見つけた経験を話す", tags:["ポイント"], checked:false }] },
+  { id:35, q:"自分の提案を否定された時、どう対応しますか？", tags:["パーソナル"], checked:false, subQuestions:[], answers:[] },
+  { id:36, q:"周囲と円滑にコミュニケーションを取る方法は？", tags:["パーソナル"], checked:false, subQuestions:[], answers:[{ id:603, text:"相手の意図を理解し、適切に伝える工夫を説明", tags:["ポイント"], checked:false }] },
+  { id:37, q:"ストレスが溜まったときの対処法は？", tags:["パーソナル"], checked:false, subQuestions:[], answers:[{ id:604, text:"具体的なリフレッシュ方法を伝える（仕事に影響しない範囲）", tags:["ポイント"], checked:false }] },
+  { id:38, q:"ストレス発散法を教えてください", tags:["パーソナル"], checked:false, subQuestions:[], answers:[] },
+  { id:39, q:"趣味/特技を教えてください", tags:["その他"], checked:false, subQuestions:[], answers:[] },
+  { id:40, q:"最近気になっているニュースはありますか", tags:["その他"], checked:false, subQuestions:[], answers:[] },
+  { id:41, q:"最近読んだ本の中でオススメはありますか", tags:["その他"], checked:false, subQuestions:[], answers:[] },
+  { id:42, q:"他社の選考状況を教えてください", tags:["その他"], checked:false, subQuestions:[], answers:[] },
+  { id:43, q:"最後に何か言いたいことはありますか", tags:["その他"], checked:false, subQuestions:[], answers:[] },
+  { id:44, q:"最近関心を持っていることは何ですか", tags:["その他"], checked:false, subQuestions:[], answers:[] },
+  { id:45, q:"最近失敗したことは何ですか。そこから何を学びましたか", tags:["その他"], checked:false, subQuestions:[], answers:[] }
 ];
 
-// ═══════════════ PERSISTENCE ═══════════════
+// ensure migrated data has subQuestions & answer tags
+function migrate(c) {
+  if (!c.subQuestions) c.subQuestions = [];
+  (c.answers||[]).forEach(a => { if (!a.tags) a.tags = []; });
+  (c.subQuestions||[]).forEach(s => {
+    (s.answers||[]).forEach(a => { if (!a.tags) a.tags = []; });
+  });
+}
+
+// ═══════════ PERSISTENCE ═══════════
 function load() {
   try {
-    const s = localStorage.getItem('review_cards_v2');
-    if (s) { cards = JSON.parse(s); return; }
+    const s = localStorage.getItem('review_cards_v3');
+    if (s) { cards = JSON.parse(s); cards.forEach(migrate); return; }
+  } catch(e) {}
+  // try v2 data
+  try {
+    const s2 = localStorage.getItem('review_cards_v2');
+    if (s2) { cards = JSON.parse(s2); cards.forEach(migrate); return; }
   } catch(e) {}
   cards = JSON.parse(JSON.stringify(DEFAULT_CARDS));
 }
-function save() { localStorage.setItem('review_cards_v2', JSON.stringify(cards)); refreshTags(); }
-function resetAll() { if (confirm('重置为默认45题？你对卡片的修改将丢失。')) { cards = JSON.parse(JSON.stringify(DEFAULT_CARDS)); localStorage.removeItem('review_cards_v2'); refreshTags(); render(); } }
+function save() { localStorage.setItem('review_cards_v3', JSON.stringify(cards)); refreshTags(); }
+function resetAll() { if (confirm('重置为默认45题？你对卡片的修改将丢失。')) { cards = JSON.parse(JSON.stringify(DEFAULT_CARDS)); localStorage.removeItem('review_cards_v3'); refreshTags(); render(); } }
 function nextId() { return Date.now(); }
 
-// ═══════════════ TAGS ═══════════════
+// ═══════════ TAGS ═══════════
 function refreshTags() {
   allTags = new Set();
-  cards.forEach(c => { (c.tags||[]).forEach(t => allTags.add(t)); (c.answers||[]).forEach(a => (a.tags||[]).forEach(t => allTags.add(t))); });
+  cards.forEach(c => {
+    (c.tags||[]).forEach(t => allTags.add(t));
+    (c.answers||[]).forEach(a => (a.tags||[]).forEach(t => allTags.add(t)));
+    (c.subQuestions||[]).forEach(s => {
+      (s.tags||[]).forEach(t => allTags.add(t));
+      (s.answers||[]).forEach(a => (a.tags||[]).forEach(t => allTags.add(t)));
+    });
+  });
 }
 let activeTag = null;
 function filterByTag(tag) { activeTag = (activeTag === tag) ? null : tag; render(); }
+function matchTag(c) {
+  if (!activeTag) return true;
+  if ((c.tags||[]).includes(activeTag)) return true;
+  if ((c.answers||[]).some(a => (a.tags||[]).includes(activeTag))) return true;
+  return (c.subQuestions||[]).some(s => (s.tags||[]).includes(activeTag) || (s.answers||[]).some(a => (a.tags||[]).includes(activeTag)));
+}
 
-// ═══════════════ CARD CRUD ═══════════════
-function addCard() { cards.unshift({ id: nextId(), q: '', tags: [], checked: false, answers: [] }); save(); render(); }
+// ═══════════ DRAG & DROP ═══════════
+let dragSrcId = null;
+function dragStart(e, id) { dragSrcId = id; e.target.closest('.card').classList.add('dragging'); e.dataTransfer.effectAllowed = 'move'; }
+function dragEnd(e) { e.target.closest('.card').classList.remove('dragging'); document.querySelectorAll('.card.drag-over').forEach(el => el.classList.remove('drag-over')); dragSrcId = null; }
+function dragOver(e) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; e.target.closest('.card')?.classList.add('drag-over'); }
+function dragLeave(e) { e.target.closest('.card')?.classList.remove('drag-over'); }
+function drop(e, targetId) {
+  e.preventDefault();
+  document.querySelectorAll('.card.drag-over').forEach(el => el.classList.remove('drag-over'));
+  if (dragSrcId == null || dragSrcId === targetId) return;
+  const srcIdx = cards.findIndex(c => c.id === dragSrcId);
+  const dstIdx = cards.findIndex(c => c.id === targetId);
+  if (srcIdx < 0 || dstIdx < 0) return;
+  const [moved] = cards.splice(srcIdx, 1);
+  cards.splice(dstIdx, 0, moved);
+  save(); render();
+}
+// touch support
+let touchDragId = null;
+function touchStart(e, id) { touchDragId = id; e.target.closest('.card').classList.add('dragging'); }
+function touchEnd(e) { e.target.closest('.card').classList.remove('dragging'); }
+function touchMove(e) {
+  if (!touchDragId) return;
+  const touch = e.touches[0];
+  const el = document.elementFromPoint(touch.clientX, touch.clientY);
+  const card = el?.closest('.card');
+  document.querySelectorAll('.card.drag-over').forEach(c => c.classList.remove('drag-over'));
+  if (card && card.id && card.id !== 'card-'+touchDragId) card.classList.add('drag-over');
+}
+
+// ═══════════ CARD CRUD ═══════════
+function addCard() { cards.unshift({ id: nextId(), q: '', tags: [], checked: false, subQuestions: [], answers: [] }); save(); render(); }
 function deleteCard(id) { cards = cards.filter(c => c.id !== id); save(); render(); }
 function toggleCard(id) { const c = cards.find(c => c.id === id); if (c) { c.checked = !c.checked; save(); render(); } }
 function updateQ(id, val) { const c = cards.find(c => c.id === id); if (c) { c.q = val; save(); } }
 function addCardTag(id, tag, inp) { tag = tag.trim(); if (!tag) return; const c = cards.find(c => c.id === id); if (c && !c.tags.includes(tag)) { c.tags.push(tag); save(); render(); } if (inp) inp.value = ''; }
 function removeCardTag(id, tag) { const c = cards.find(c => c.id === id); if (c) { c.tags = c.tags.filter(t => t !== tag); save(); render(); } }
+
+// answers (main card)
 function addAnswer(cid) { const c = cards.find(c => c.id === cid); if (c) { c.answers.push({ id: nextId(), text: '', tags: [], checked: false }); save(); render(); } }
 function deleteAnswer(cid, aid) { const c = cards.find(c => c.id === cid); if (c) { c.answers = c.answers.filter(a => a.id !== aid); save(); render(); } }
 function updateAnswer(cid, aid, val) { const c = cards.find(c => c.id === cid); if (!c) return; const a = c.answers.find(a => a.id === aid); if (a) { a.text = val; save(); } }
@@ -261,14 +348,36 @@ function toggleAnswer(cid, aid) { const c = cards.find(c => c.id === cid); if (!
 function addAnswerTag(cid, aid, tag, inp) { tag = tag.trim(); if (!tag) return; const c = cards.find(c => c.id === cid); if (!c) return; const a = c.answers.find(a => a.id === aid); if (a && !a.tags.includes(tag)) { a.tags.push(tag); save(); render(); } if (inp) inp.value = ''; }
 function removeAnswerTag(cid, aid, tag) { const c = cards.find(c => c.id === cid); if (!c) return; const a = c.answers.find(a => a.id === aid); if (a) { a.tags = a.tags.filter(t => t !== tag); save(); render(); } }
 
-// ═══════════════ HEADER CLICK ═══════════════
+// sub-questions
+function addSub(cid) { const c = cards.find(c => c.id === cid); if (c) { c.subQuestions.push({ id: nextId(), text: '', tags: [], checked: false, answers: [] }); save(); render(); } }
+function deleteSub(cid, sid) { const c = cards.find(c => c.id === cid); if (c) { c.subQuestions = c.subQuestions.filter(s => s.id !== sid); save(); render(); } }
+function updateSub(cid, sid, val) { const c = cards.find(c => c.id === cid); if (!c) return; const s = c.subQuestions.find(s => s.id === sid); if (s) { s.text = val; save(); } }
+function toggleSub(cid, sid) { const c = cards.find(c => c.id === cid); if (!c) return; const s = c.subQuestions.find(s => s.id === sid); if (s) { s.checked = !s.checked; save(); render(); } }
+function addSubTag(cid, sid, tag, inp) { tag = tag.trim(); if (!tag) return; const c = cards.find(c => c.id === cid); if (!c) return; const s = c.subQuestions.find(s => s.id === sid); if (s && !s.tags.includes(tag)) { s.tags.push(tag); save(); render(); } if (inp) inp.value = ''; }
+function removeSubTag(cid, sid, tag) { const c = cards.find(c => c.id === cid); if (!c) return; const s = c.subQuestions.find(s => s.id === sid); if (s) { s.tags = s.tags.filter(t => t !== tag); save(); render(); } }
+
+// sub-question answers
+function addSubAnswer(cid, sid) { const c = cards.find(c => c.id === cid); if (!c) return; const s = c.subQuestions.find(s => s.id === sid); if (s) { s.answers.push({ id: nextId(), text: '', tags: [], checked: false }); save(); render(); } }
+function deleteSubAnswer(cid, sid, aid) { const c = cards.find(c => c.id === cid); if (!c) return; const s = c.subQuestions.find(s => s.id === sid); if (s) { s.answers = s.answers.filter(a => a.id !== aid); save(); render(); } }
+function updateSubAnswer(cid, sid, aid, val) { const c = cards.find(c => c.id === cid); if (!c) return; const s = c.subQuestions.find(s => s.id === sid); if (!s) return; const a = s.answers.find(a => a.id === aid); if (a) { a.text = val; save(); } }
+function toggleSubAnswer(cid, sid, aid) { const c = cards.find(c => c.id === cid); if (!c) return; const s = c.subQuestions.find(s => s.id === sid); if (!s) return; const a = s.answers.find(a => a.id === aid); if (a) { a.checked = !a.checked; save(); render(); } }
+function addSubAnswerTag(cid, sid, aid, tag, inp) { tag = tag.trim(); if (!tag) return; const c = cards.find(c => c.id === cid); if (!c) return; const s = c.subQuestions.find(s => s.id === sid); if (!s) return; const a = s.answers.find(a => a.id === aid); if (a && !a.tags.includes(tag)) { a.tags.push(tag); save(); render(); } if (inp) inp.value = ''; }
+function removeSubAnswerTag(cid, sid, aid, tag) { const c = cards.find(c => c.id === cid); if (!c) return; const s = c.subQuestions.find(s => s.id === sid); if (!s) return; const a = s.answers.find(a => a.id === aid); if (a) { a.tags = a.tags.filter(t => t !== tag); save(); render(); } }
+
+// sub-q expand
+function toggleSubQ(cid, sid, el) {
+  if (window.getSelection().toString()) return;
+  el.closest('.sub-q').classList.toggle('open');
+}
+
+// header click
 function onHeaderClick(e, id, el) {
   if (e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON' || e.target.closest('button')) return;
   if (window.getSelection().toString()) return;
   el.classList.toggle('open');
 }
 
-// ═══════════════ RENDER EDIT MODE ═══════════════
+// ═══════════ RENDER ═══════════
 function render() {
   if (currentMode === 'quiz') return;
   refreshTags();
@@ -284,46 +393,91 @@ function renderSidebar() {
   el.innerHTML = '<h3>标签筛选</h3>' +
     `<div class="tag-item${!activeTag?' active':''}" onclick="filterByTag(null)">全部<span class="tag-count">(${cards.length})</span></div>` +
     tags.map(t => {
-      const cnt = cards.filter(c => (c.tags||[]).includes(t) || (c.answers||[]).some(a => (a.tags||[]).includes(t))).length;
+      const cnt = cards.filter(c => matchTagSingle(c, t)).length;
       return `<div class="tag-item${activeTag===t?' active':''}" onclick="filterByTag('${t.replace(/'/g,"\\'")}')">${t}<span class="tag-count">(${cnt})</span></div>`;
     }).join('');
+}
+function matchTagSingle(c, t) {
+  if ((c.tags||[]).includes(t)) return true;
+  if ((c.answers||[]).some(a => (a.tags||[]).includes(t))) return true;
+  return (c.subQuestions||[]).some(s => (s.tags||[]).includes(t) || (s.answers||[]).some(a => (a.tags||[]).includes(t)));
 }
 
 function renderCards() {
   const list = document.getElementById('cardList');
-  let filtered = activeTag ? cards.filter(c => (c.tags||[]).includes(activeTag) || (c.answers||[]).some(a => (a.tags||[]).includes(activeTag))) : cards;
+  let filtered = activeTag ? cards.filter(matchTag) : cards;
   if (!filtered.length) { list.innerHTML = '<div class="empty-state">暂无卡片。「＋ 新建」开始添加。</div>'; return; }
   list.innerHTML = filtered.map((c, i) => `
-    <div class="card${c.checked?' open':''}" id="card-${c.id}">
+    <div class="card${c.checked?' open':''}" id="card-${c.id}"
+         draggable="true"
+         ondragstart="dragStart(event,${c.id})" ondragend="dragEnd(event)"
+         ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="drop(event,${c.id})"
+         ontouchstart="touchStart(event,${c.id})" ontouchend="touchEnd(event)" ontouchmove="touchMove(event)">
       <div class="card-header" onclick="onHeaderClick(event,${c.id},this.parentElement)">
+        <span class="drag-handle" title="拖拽排序">⋮⋮</span>
         <input type="checkbox" class="card-check" ${c.checked?'checked':''} onclick="event.stopPropagation();toggleCard(${c.id})" title="标记已掌握">
         <div class="card-q" contenteditable="true" onblur="updateQ(${c.id},this.innerText)" onkeydown="event.key==='Enter'&&!event.shiftKey&&(event.preventDefault(),this.blur())">${c.q}</div>
         <span class="card-num">#${i+1}</span>
       </div>
       <div class="card-body">
         <div class="tag-row">${(c.tags||[]).map(t => `<span class="tag q-tag">${t}<span class="tag-x" onclick="event.stopPropagation();removeCardTag(${c.id},'${t.replace(/'/g,"\\'")}')">&times;</span></span>`).join('')}<input class="tag-input" placeholder="标签" onkeydown="if(event.key==='Enter'){event.stopPropagation();addCardTag(${c.id},this.value,this)}" onclick="event.stopPropagation()"></div>
-        ${(c.answers||[]).map(a => `
-          <div class="answer-item">
-            <input type="checkbox" class="ans-check" ${a.checked?'checked':''} onclick="event.stopPropagation();toggleAnswer(${c.id},${a.id})">
-            <div style="flex:1">
-              <div class="ans-text" contenteditable="true" onblur="updateAnswer(${c.id},${a.id},this.innerText)" onkeydown="event.key==='Enter'&&!event.shiftKey&&(event.preventDefault(),this.blur())">${a.text}</div>
-              <div class="tag-row">${(a.tags||[]).map(t => `<span class="tag a-tag">${t}<span class="tag-x" onclick="event.stopPropagation();removeAnswerTag(${c.id},${a.id},'${t.replace(/'/g,"\\'")}')">&times;</span></span>`).join('')}<input class="tag-input" placeholder="标签" onkeydown="if(event.key==='Enter'){event.stopPropagation();addAnswerTag(${c.id},${a.id},this.value,this)}" onclick="event.stopPropagation()"></div>
-            </div>
-            <button class="ans-del" onclick="event.stopPropagation();deleteAnswer(${c.id},${a.id})">&times;</button>
-          </div>`).join('')}
+        ${(c.answers||[]).length ? '<div class="card-section-title">主问题答案</div>' : ''}
+        ${(c.answers||[]).map(a => renderAnswer(c.id, a, 'answer')).join('')}
+        ${(c.subQuestions||[]).map(s => renderSubQ(c.id, s)).join('')}
       </div>
       <div class="card-footer">
         <button class="add-ans-btn" onclick="event.stopPropagation();addAnswer(${c.id})">＋ 添加答案</button>
+        <button class="add-sub-btn" onclick="event.stopPropagation();addSub(${c.id})">＋ 添加次级问题</button>
         <button class="del-card-btn" onclick="event.stopPropagation();deleteCard(${c.id})">删除</button>
       </div>
     </div>`).join('');
 }
 
+function renderAnswer(cid, a, _prefix) {
+  return `
+    <div class="answer-item">
+      <input type="checkbox" class="ans-check" ${a.checked?'checked':''} onclick="event.stopPropagation();toggleAnswer(${cid},${a.id})">
+      <div style="flex:1">
+        <div class="ans-text" contenteditable="true" onblur="updateAnswer(${cid},${a.id},this.innerText)" onkeydown="event.key==='Enter'&&!event.shiftKey&&(event.preventDefault(),this.blur())">${a.text}</div>
+        <div class="tag-row">${(a.tags||[]).map(t => `<span class="tag a-tag">${t}<span class="tag-x" onclick="event.stopPropagation();removeAnswerTag(${cid},${a.id},'${t.replace(/'/g,"\\'")}')">&times;</span></span>`).join('')}<input class="tag-input" placeholder="标签" onkeydown="if(event.key==='Enter'){event.stopPropagation();addAnswerTag(${cid},${a.id},this.value,this)}" onclick="event.stopPropagation()"></div>
+      </div>
+      <button class="ans-del" onclick="event.stopPropagation();deleteAnswer(${cid},${a.id})">&times;</button>
+    </div>`;
+}
+
+function renderSubQ(cid, s) {
+  return `
+    <div class="sub-q" id="sub-${s.id}">
+      <div class="sub-q-header" onclick="toggleSubQ(${cid},${s.id},event.target)">
+        <input type="checkbox" class="sub-check" ${s.checked?'checked':''} onclick="event.stopPropagation();toggleSub(${cid},${s.id})">
+        <div class="sub-text" contenteditable="true" onblur="updateSub(${cid},${s.id},this.innerText)" onkeydown="event.key==='Enter'&&!event.shiftKey&&(event.preventDefault(),this.blur())">${s.text}</div>
+        <button class="sub-del" onclick="event.stopPropagation();deleteSub(${cid},${s.id})">&times;</button>
+      </div>
+      <div class="tag-row" style="padding-left:21px">${(s.tags||[]).map(t => `<span class="tag a-tag">${t}<span class="tag-x" onclick="event.stopPropagation();removeSubTag(${cid},${s.id},'${t.replace(/'/g,"\\'")}')">&times;</span></span>`).join('')}<input class="tag-input" placeholder="标签" onkeydown="if(event.key==='Enter'){event.stopPropagation();addSubTag(${cid},${s.id},this.value,this)}" onclick="event.stopPropagation()"></div>
+      <div class="sub-q-body">
+        ${(s.answers||[]).map(a => renderSubAnswerItem(cid, s.id, a)).join('')}
+        <button class="add-ans-btn" style="margin-top:4px;font-size:11px" onclick="event.stopPropagation();addSubAnswer(${cid},${s.id})">＋ 添加回答</button>
+      </div>
+    </div>`;
+}
+
+function renderSubAnswerItem(cid, sid, a) {
+  return `
+    <div class="answer-item">
+      <input type="checkbox" class="ans-check" ${a.checked?'checked':''} onclick="event.stopPropagation();toggleSubAnswer(${cid},${sid},${a.id})">
+      <div style="flex:1">
+        <div class="ans-text" contenteditable="true" onblur="updateSubAnswer(${cid},${sid},${a.id},this.innerText)" onkeydown="event.key==='Enter'&&!event.shiftKey&&(event.preventDefault(),this.blur())">${a.text}</div>
+        <div class="tag-row">${(a.tags||[]).map(t => `<span class="tag a-tag">${t}<span class="tag-x" onclick="event.stopPropagation();removeSubAnswerTag(${cid},${sid},${a.id},'${t.replace(/'/g,"\\'")}')">&times;</span></span>`).join('')}<input class="tag-input" placeholder="标签" onkeydown="if(event.key==='Enter'){event.stopPropagation();addSubAnswerTag(${cid},${sid},${a.id},this.value,this)}" onclick="event.stopPropagation()"></div>
+      </div>
+      <button class="ans-del" onclick="event.stopPropagation();deleteSubAnswer(${cid},${sid},${a.id})">&times;</button>
+    </div>`;
+}
+
 function renderStats() {
   const el = document.getElementById('statPanel');
-  const totalAns = cards.reduce((s,c) => s + (c.answers||[]).length, 0);
+  const totalAns = cards.reduce((s,c) => s + (c.answers||[]).length + (c.subQuestions||[]).reduce((ss,sq) => ss + (sq.answers||[]).length, 0), 0);
   const checkedQ = cards.filter(c => c.checked).length;
-  const checkedA = cards.reduce((s,c) => s + (c.answers||[]).filter(a => a.checked).length, 0);
+  const checkedA = cards.reduce((s,c) => s + (c.answers||[]).filter(a => a.checked).length + (c.subQuestions||[]).reduce((ss,sq) => ss + (sq.answers||[]).filter(a => a.checked).length, 0), 0);
   const tagCounts = {};
   cards.forEach(c => (c.tags||[]).forEach(t => { tagCounts[t] = (tagCounts[t]||0)+1; }));
   const maxCnt = Math.max(1, ...Object.values(tagCounts));
@@ -340,7 +494,7 @@ function renderStats() {
   `;
 }
 
-// ═══════════════ MODE SWITCH ═══════════════
+// ═══════════ MODE SWITCH ═══════════
 function setMode(mode) {
   currentMode = mode;
   document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
@@ -355,15 +509,15 @@ function setMode(mode) {
   }
 }
 
-// ═══════════════ QUIZ MODE ═══════════════
+// ═══════════ QUIZ ═══════════
 function showQuizSetup() {
   const el = document.getElementById('quizContent');
-  const tags = ['全部', ...allTags].sort();
+  const tags = [...allTags].sort();
   el.innerHTML = `
     <div class="quiz-setup">
       <h2 style="margin-bottom:20px">模拟测试</h2>
       <label>选择标签范围</label>
-      <select id="quizTag"><option value="">全部题库</option>${tags.filter(t=>t!=='全部').map(t => `<option value="${t}">${t}</option>`).join('')}</select>
+      <select id="quizTag"><option value="">全部题库</option>${tags.map(t => `<option value="${t}">${t}</option>`).join('')}</select>
       <label>抽取题数</label>
       <input type="number" id="quizNum" value="10" min="1" max="${cards.length}">
       <div style="font-size:12px;color:var(--subtle);margin-top:4px">题库共 ${cards.length} 题</div>
@@ -375,15 +529,10 @@ function showQuizSetup() {
 function startQuiz() {
   const tag = document.getElementById('quizTag').value;
   const num = Math.min(parseInt(document.getElementById('quizNum').value) || 10, cards.length);
-  let pool = tag ? cards.filter(c => (c.tags||[]).includes(tag) || (c.answers||[]).some(a => (a.tags||[]).includes(tag))) : [...cards];
+  let pool = tag ? cards.filter(c => matchTagSingle(c, tag)) : [...cards];
   if (!pool.length) { alert('该标签下没有题目'); return; }
-  // Fisher-Yates shuffle
   for (let i = pool.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [pool[i], pool[j]] = [pool[j], pool[i]]; }
-  quizState = {
-    questions: pool.slice(0, Math.min(num, pool.length)),
-    index: 0,
-    results: [] // { id, gotIt: bool }
-  };
+  quizState = { questions: pool.slice(0, Math.min(num, pool.length)), index: 0, results: [] };
   showQuizCard();
 }
 
@@ -392,12 +541,14 @@ function showQuizCard() {
   const qs = quizState;
   if (qs.index >= qs.questions.length) { showQuizEnd(); return; }
   const c = qs.questions[qs.index];
+  const allAnswers = [...(c.answers||[]), ...(c.subQuestions||[]).flatMap(s => (s.answers||[]).map(a => ({...a, prefix: s.text})))];
   el.innerHTML = `
     <div class="quiz-card">
       <div class="quiz-progress">${qs.index + 1} / ${qs.questions.length}</div>
       <div class="q-text">${c.q}</div>
+      ${(c.subQuestions||[]).length ? '<div style="margin-bottom:16px">'+c.subQuestions.map(s => `<div style="font-size:.95em;color:var(--subtle);margin:4px 0">↳ ${s.text}</div>`).join('')+'</div>' : ''}
       <button class="reveal-btn" onclick="revealAnswer(this)">▼ 点击显示标准答案</button>
-      <div class="a-box" id="answerBox">${(c.answers||[]).map(a => `<p style="margin-bottom:6px">${a.text}</p>`).join('') || '<span style="color:#aaa">暂无标准答案</span>'}</div>
+      <div class="a-box" id="answerBox">${allAnswers.length ? allAnswers.map(a => `<p style="margin-bottom:6px">${a.prefix ? '<span style="color:var(--subtle);font-size:.9em">'+a.prefix+'：</span>' : ''}${a.text}</p>`).join('') : '<span style="color:#aaa">暂无标准答案</span>'}</div>
       <div class="quiz-actions" id="quizBtns" style="display:none">
         <button class="got-it" onclick="quizResult(true)">已掌握</button>
         <button class="not-yet" onclick="quizResult(false)">还需练习</button>
@@ -425,12 +576,8 @@ function showQuizEnd() {
   const mastered = quizState.results.filter(r => r.gotIt === true).length;
   const skipped = quizState.results.filter(r => r.gotIt === null).length;
   const weak = quizState.results.filter(r => r.gotIt === false);
-  // weak tags
   const weakTags = {};
-  weak.forEach(r => {
-    const c = cards.find(c => c.id === r.id);
-    if (c) (c.tags||[]).forEach(t => { weakTags[t] = (weakTags[t]||0) + 1; });
-  });
+  weak.forEach(r => { const c = cards.find(c => c.id === r.id); if (c) (c.tags||[]).forEach(t => { weakTags[t] = (weakTags[t]||0)+1; }); });
   el.innerHTML = `
     <div class="quiz-end">
       <h2>测试完成</h2>
@@ -449,12 +596,11 @@ function showQuizEnd() {
   `;
 }
 
-// ═══════════════ EXPORT ═══════════════
+// ═══════════ EXPORT ═══════════
 function exportJSON() {
   const blob = new Blob([JSON.stringify(cards, null, 2)], {type: 'application/json'});
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'interview_cards.json'; a.click();
 }
-
 function exportMarkdown() {
   let md = '# 面接対策 問題集\n\n';
   const byTag = {};
@@ -464,6 +610,10 @@ function exportMarkdown() {
     cards.forEach((c, i) => {
       md += `### ${i+1}. ${c.q}\n\n`;
       (c.answers||[]).forEach(a => { md += `- ${a.text}\n`; });
+      (c.subQuestions||[]).forEach(s => {
+        md += `  - **${s.text}**\n`;
+        (s.answers||[]).forEach(a => { md += `    - ${a.text}\n`; });
+      });
       md += '\n';
     });
   });
@@ -471,7 +621,7 @@ function exportMarkdown() {
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'interview_cards.md'; a.click();
 }
 
-// ═══════════════ INIT ═══════════════
+// ═══════════ INIT ═══════════
 load();
 render();
 </script>
