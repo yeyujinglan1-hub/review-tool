@@ -198,6 +198,8 @@ body.quiz-mode #quizView { display: flex; }
     <button class="mode-tab" onclick="setMode('quiz')">模拟测试</button>
   </div>
   <button onclick="exportJSON()">JSON导出</button>
+  <button onclick="document.getElementById('importFile').click()">JSON导入</button>
+  <input type="file" id="importFile" accept=".json" onchange="importFile(this)" style="display:none">
   <button onclick="copyToClipboard()">复制</button>
   <button onclick="importFromClipboard()">粘贴</button>
   <button onclick="showSyncDialog()">☁ 同步</button>
@@ -301,10 +303,14 @@ function load() {
     const s = localStorage.getItem('review_cards_v3');
     if (s) { cards = JSON.parse(s); cards.forEach(migrate); return; }
   } catch(e) {}
-  // try v2 data
   try {
     const s2 = localStorage.getItem('review_cards_v2');
-    if (s2) { cards = JSON.parse(s2); cards.forEach(migrate); return; }
+    if (s2) { cards = JSON.parse(s2); cards.forEach(migrate); save(); return; }
+  } catch(e) {}
+  // try old v1
+  try {
+    const s1 = localStorage.getItem('review_cards');
+    if (s1) { cards = JSON.parse(s1); cards.forEach(migrate); save(); return; }
   } catch(e) {}
   cards = JSON.parse(JSON.stringify(DEFAULT_CARDS));
 }
@@ -734,6 +740,26 @@ async function loadFromGist() {
       document.getElementById('syncStatus').textContent = '失败: ' + (body.message || resp.status);
     }
   } catch(e) { document.getElementById('syncStatus').textContent = '网络错误: ' + e.message; }
+}
+
+// ═══════════ FILE IMPORT ═══════════
+function importFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!Array.isArray(data)) throw new Error('format');
+      if (!confirm('将导入 ' + data.length + ' 题，覆盖当前数据？')) { input.value = ''; return; }
+      cards = data;
+      cards.forEach(migrate);
+      save(); render();
+      alert('导入成功！共 ' + cards.length + ' 题');
+    } catch(ex) { alert('JSON 格式不正确'); }
+  };
+  reader.readAsText(file);
+  input.value = '';
 }
 
 // ═══════════ CLIPBOARD ═══════════
