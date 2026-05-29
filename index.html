@@ -168,6 +168,18 @@ body.quiz-mode #quizView { display: flex; }
   .panel { width: 100%; border-left: none; border-top: 1px solid var(--border); padding: 12px; }
   .topbar h1 { font-size: .95em; }
 }
+/* sync modal */
+.modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.35); z-index:99; align-items:center; justify-content:center; }
+.modal-overlay.show { display:flex; }
+.modal { background:var(--card); border-radius:12px; padding:24px; max-width:400px; width:90%; box-shadow:0 8px 30px rgba(0,0,0,.15); }
+.modal h3 { margin-bottom:12px; }
+.modal p { font-size:13px; color:var(--subtle); margin-bottom:12px; line-height:1.5; }
+.modal input { width:100%; padding:8px 12px; border:1px solid var(--border); border-radius:6px; font-size:13px; margin-bottom:12px; }
+.modal .modal-btns { display:flex; gap:8px; justify-content:flex-end; }
+.modal .modal-btns button { padding:6px 16px; font-size:13px; border-radius:6px; border:1px solid var(--border); background:var(--card); }
+.modal .modal-btns button.primary { background:var(--accent); color:#fff; border-color:var(--accent); }
+.modal .status { font-size:12px; margin-top:8px; min-height:18px; }
+
 @media print {
   .topbar, .sidebar, .panel, .card-footer, .tag-input, .drag-handle, .ans-del, .sub-del { display: none !important; }
   .card { break-inside: avoid; box-shadow: none; border: 1px solid #eee; }
@@ -186,8 +198,10 @@ body.quiz-mode #quizView { display: flex; }
     <button class="mode-tab" onclick="setMode('quiz')">模拟测试</button>
   </div>
   <button onclick="exportJSON()">JSON导出</button>
-  <button onclick="exportMarkdown()">MD导出</button>
-  <button onclick="window.print()">PDF打印</button>
+  <button onclick="copyToClipboard()">复制</button>
+  <button onclick="importFromClipboard()">粘贴</button>
+  <button onclick="showSyncDialog()">☁ 同步</button>
+  <button onclick="window.print()">PDF</button>
   <button class="primary" onclick="addCard()">＋ 新建</button>
 </div>
 
@@ -198,6 +212,23 @@ body.quiz-mode #quizView { display: flex; }
 </div>
 
 <div id="quizView"><div id="quizContent"></div></div>
+
+<!-- sync modal -->
+<div class="modal-overlay" id="syncModal">
+  <div class="modal">
+    <h3>☁ 云端同步</h3>
+    <p>将题库保存到 GitHub Gist，实现跨设备同步。需要一个 <a href="https://github.com/settings/tokens/new?scopes=gist&description=review-tool-sync" target="_blank">GitHub Token</a>（勾选 gist 权限即可）。</p>
+    <input type="password" id="ghToken" placeholder="粘贴 GitHub Token...">
+    <div style="font-size:11px;color:var(--subtle);margin-bottom:10px">Token 仅保存在本地浏览器</div>
+    <div class="modal-btns">
+      <button onclick="closeSyncDialog()">关闭</button>
+      <button onclick="uploadToGist()" style="background:#10b981;color:#fff;border-color:#10b981">⬆ 上传</button>
+      <button class="primary" onclick="loadFromGist()">⬇ 下载</button>
+    </div>
+    <div class="status" id="syncStatus"></div>
+    <div style="font-size:11px;color:var(--subtle);margin-top:8px" id="gistInfo"></div>
+  </div>
+</div>
 
 <script>
 // ═══════════ DATA ═══════════
@@ -619,6 +650,111 @@ function exportMarkdown() {
   });
   const blob = new Blob([md], {type: 'text/markdown'});
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'interview_cards.md'; a.click();
+}
+
+// ═══════════ SYNC ═══════════
+const GIST_DESC = 'review-tool-cards';
+let gistId = localStorage.getItem('review_gist_id') || '';
+
+function showSyncDialog() {
+  document.getElementById('syncModal').classList.add('show');
+  document.getElementById('ghToken').value = localStorage.getItem('gh_token') || '';
+  document.getElementById('syncStatus').textContent = '';
+  if (gistId) { document.getElementById('gistInfo').textContent = 'Gist ID: ' + gistId; }
+}
+function closeSyncDialog() { document.getElementById('syncModal').classList.remove('show'); }
+
+async function getGistHeaders() {
+  const token = document.getElementById('ghToken').value.trim();
+  if (!token) { document.getElementById('syncStatus').textContent = '请输入 Token'; return null; }
+  localStorage.setItem('gh_token', token);
+  return { 'Authorization': 'Bearer ' + token, 'Accept': 'application/vnd.github.v3+json' };
+}
+
+async function uploadToGist() {
+  document.getElementById('syncStatus').textContent = '上传中...';
+  const headers = await getGistHeaders();
+  if (!headers) return;
+  const content = JSON.stringify(cards, null, 2);
+  try {
+    let resp, body;
+    if (gistId) {
+      resp = await fetch('https://api.github.com/gists/' + gistId, {
+        method: 'PATCH', headers,
+        body: JSON.stringify({ description: GIST_DESC, files: { 'interview_cards.json': { content } } })
+      });
+    } else {
+      resp = await fetch('https://api.github.com/gists', {
+        method: 'POST', headers,
+        body: JSON.stringify({ description: GIST_DESC, public: false, files: { 'interview_cards.json': { content } } })
+      });
+    }
+    body = await resp.json();
+    if (resp.ok) {
+      gistId = body.id;
+      localStorage.setItem('review_gist_id', gistId);
+      document.getElementById('gistInfo').textContent = 'Gist ID: ' + gistId + ' | 上传成功';
+      document.getElementById('syncStatus').textContent = '';
+    } else {
+      document.getElementById('syncStatus').textContent = '失败: ' + (body.message || resp.status);
+    }
+  } catch(e) { document.getElementById('syncStatus').textContent = '网络错误: ' + e.message; }
+}
+
+async function loadFromGist() {
+  document.getElementById('syncStatus').textContent = '下载中...';
+  const headers = await getGistHeaders();
+  if (!headers) return;
+  if (!gistId) {
+    // try to find existing gist
+    try {
+      const resp = await fetch('https://api.github.com/gists', { headers });
+      const gists = await resp.json();
+      if (resp.ok && Array.isArray(gists)) {
+        const found = gists.find(g => g.description === GIST_DESC);
+        if (found) { gistId = found.id; localStorage.setItem('review_gist_id', gistId); }
+      }
+    } catch(e) {}
+    if (!gistId) { document.getElementById('syncStatus').textContent = '未找到云端数据，请先在另一台设备上点击「上传」'; return; }
+  }
+  try {
+    const resp = await fetch('https://api.github.com/gists/' + gistId, { headers });
+    const body = await resp.json();
+    if (resp.ok && body.files && body.files['interview_cards.json']) {
+      const raw = await fetch(body.files['interview_cards.json'].raw_url);
+      const data = await raw.json();
+      if (Array.isArray(data)) {
+        cards = data;
+        cards.forEach(migrate);
+        save(); render();
+        document.getElementById('syncStatus').textContent = '同步成功！已导入 ' + cards.length + ' 题';
+        document.getElementById('gistInfo').textContent = 'Gist ID: ' + gistId;
+      }
+    } else {
+      document.getElementById('syncStatus').textContent = '失败: ' + (body.message || resp.status);
+    }
+  } catch(e) { document.getElementById('syncStatus').textContent = '网络错误: ' + e.message; }
+}
+
+// ═══════════ CLIPBOARD ═══════════
+async function copyToClipboard() {
+  try {
+    await navigator.clipboard.writeText(JSON.stringify(cards, null, 2));
+    alert('已复制到剪贴板！（共 ' + cards.length + ' 题）');
+  } catch(e) { alert('复制失败，请用 JSON 导出'); }
+}
+
+async function importFromClipboard() {
+  try {
+    const text = await navigator.clipboard.readText();
+    const data = JSON.parse(text);
+    if (!Array.isArray(data)) throw new Error('格式不对');
+    if (!confirm('将从剪贴板导入 ' + data.length + ' 题，覆盖当前数据，确定继续？')) return;
+    cards = data;
+    cards.forEach(migrate);
+    save(); render();
+    alert('导入成功！（共 ' + cards.length + ' 题）');
+  } catch(e) { alert('粘贴失败：' + e.message + '。请先在另一台设备上「复制」，再在这台设备上「粘贴」。'); }
 }
 
 // ═══════════ INIT ═══════════
